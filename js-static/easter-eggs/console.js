@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // List all tanks
     async function listTanks() {
         try {
-            const response = await fetch('https://cdn.jsdelivr.net/gh/HEATLabs/HEAT-Labs-Database@main/tanks.json');
+            const response = await fetch('https://cdn2.heatlabs.net/tanks.json');
             if (!response.ok) throw new Error('Failed to load tank data');
 
             const data = await response.json();

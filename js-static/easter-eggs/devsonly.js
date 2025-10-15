@@ -17,7 +17,7 @@
 
             // If buffer ends with any of the secret codes, redirect
             if (secretCodes.some(code => inputBuffer.endsWith(code))) {
-                window.location.href = 'https://heatlabs.net/easter-eggs/devsonly.html';
+                window.location.href = 'https://heatlabs.net/easter-eggs/devsonly';
             }
         }
     });

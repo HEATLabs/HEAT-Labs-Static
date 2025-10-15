@@ -68,7 +68,7 @@ function animateHeroCounter(elementId, targetValue, duration, speedFactor = 1) {
 
 async function fetchFunFactsData() {
     try {
-        const response = await fetch('"https://cdn1.heatlabs.net/home-stats.json');
+        const response = await fetch('https://cdn1.heatlabs.net/home-stats.json');
         if (!response.ok) {
             throw new Error('Failed to fetch fun facts data');
         }

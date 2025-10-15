@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentResults = []; // Track current search results
 
     // Load search data
-    fetch('"https://cdn1.heatlabs.net/search-keywords.json')
+    fetch('https://cdn1.heatlabs.net/search-keywords.json')
         .then(response => response.json())
         .then(data => {
             searchData = data;

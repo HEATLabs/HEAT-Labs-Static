@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function fetchMaintenanceData() {
-    fetch('"https://cdn1.heatlabs.net/maintenance.json')
+    fetch('https://cdn1.heatlabs.net/maintenance.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');

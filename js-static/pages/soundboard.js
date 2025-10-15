@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch sounds data
     async function fetchSoundsData() {
         try {
-            const response = await fetch('"https://cdn1.heatlabs.net/sounds.json');
+            const response = await fetch('https://cdn1.heatlabs.net/sounds.json');
             if (!response.ok) {
                 throw new Error('Failed to load sounds data');
             }

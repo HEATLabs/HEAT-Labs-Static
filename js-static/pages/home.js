@@ -12,9 +12,9 @@ async function initializeHeroCounters() {
     try {
         // Fetch all required data
         const [agentsData, mapsData, tanksData] = await Promise.all([
-            fetch('"https://cdn1.heatlabs.net/agents.json').then(res => res.json()),
-            fetch('"https://cdn1.heatlabs.net/maps.json').then(res => res.json()),
-            fetch('"https://cdn1.heatlabs.net/tanks.json').then(res => res.json())
+            fetch('https://cdn1.heatlabs.net/agents.json').then(res => res.json()),
+            fetch('https://cdn1.heatlabs.net/maps.json').then(res => res.json()),
+            fetch('https://cdn1.heatlabs.net/tanks.json').then(res => res.json())
         ]);
 
         // Count all items

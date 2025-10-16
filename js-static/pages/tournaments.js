@@ -280,11 +280,12 @@ function createTournamentCard(tournament) {
         `<div class="dev-tournament-tag">No type set in config</div>`;
 
     // Determine which link to use based on time comparison
-    const tournamentLink = (tournament.type?.toLowerCase()) === 'dev' ?
-        'tournaments/tournament-maintenance' :
+    const tournamentLink =
+        (debugTournamentCards === true) ?
+            `tournaments/${tournament.slug}.html`:
             hasStarted ?
-            `tournaments/${tournament.slug}` :
-            'tournaments/tournament-maintenance';
+                `tournaments/${tournament.slug}` :
+                'tournaments/tournament-maintenance';
 
     card.innerHTML = `
         <div class="tournament-img-container">

@@ -60,8 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Update subtitles
-        if (shipElements.subtitle2) {
-            shipElements.subtitle2.textContent = "Your one-stop solution for shipping Mr.Matcha and Moonlight in World of Tanks: HEAT";
+        if (shipElements.subtitle1) {
+            shipElements.subtitle1.textContent = "Your one-stop solution for shipping Mr.Matcha and Moonlight in World of Tanks: HEAT";
         }
 
         // Update counters

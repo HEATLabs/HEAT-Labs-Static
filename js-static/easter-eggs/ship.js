@@ -10,8 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function storeOriginalTexts() {
         originalTexts = {
             title: document.querySelector('.hero-text h1')?.textContent || '',
-            subtitle1: document.querySelectorAll('.hero-subtitle')[0]?.textContent || '',
-            subtitle2: document.querySelectorAll('.hero-subtitle')[1]?.textContent || '',
+            subtitle: document.querySelector('.hero-subtitle')?.textContent || '',
             agentsLabel: document.querySelector('.hero-counter:nth-child(1) .hero-counter-label')?.textContent || '',
             agentsCount: document.querySelector('.hero-counter:nth-child(1) .hero-counter-number')?.textContent || '',
             mapsLabel: document.querySelector('.hero-counter:nth-child(2) .hero-counter-label')?.textContent || '',
@@ -29,11 +28,10 @@ document.addEventListener('DOMContentLoaded', function() {
             shipElements.title = titleElement;
         }
 
-        // Subtitles
-        const subtitleElements = document.querySelectorAll('.hero-subtitle');
-        if (subtitleElements.length >= 2) {
-            shipElements.subtitle1 = subtitleElements[0];
-            shipElements.subtitle2 = subtitleElements[1];
+        // Subtitle
+        const subtitleElement = document.querySelector('.hero-subtitle');
+        if (subtitleElement) {
+            shipElements.subtitle = subtitleElement;
         }
 
         // Counters
@@ -59,9 +57,9 @@ document.addEventListener('DOMContentLoaded', function() {
             shipElements.title.textContent = "MoonMatcha Labs";
         }
 
-        // Update subtitles
-        if (shipElements.subtitle1) {
-            shipElements.subtitle1.textContent = "Your one-stop solution for shipping Mr.Matcha and Moonlight in World of Tanks: HEAT";
+        // Update subtitle
+        if (shipElements.subtitle) {
+            shipElements.subtitle.textContent = "Your one-stop solution for shipping Mr.Matcha and Moonlight in World of Tanks: HEAT";
         }
 
         // Update counters
@@ -93,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
         counters.forEach(counter => {
             counter.style.transition = 'all 0.5s ease';
         });
-
     }
 
     // Restore original theme
@@ -107,13 +104,9 @@ document.addEventListener('DOMContentLoaded', function() {
             shipElements.title.textContent = originalTexts.title;
         }
 
-        // Restore subtitles
-        if (shipElements.subtitle1 && originalTexts.subtitle1) {
-            shipElements.subtitle1.textContent = originalTexts.subtitle1;
-        }
-
-        if (shipElements.subtitle2 && originalTexts.subtitle2) {
-            shipElements.subtitle2.textContent = originalTexts.subtitle2;
+        // Restore subtitle
+        if (shipElements.subtitle && originalTexts.subtitle) {
+            shipElements.subtitle.textContent = originalTexts.subtitle;
         }
 
         // Restore counters

@@ -12,15 +12,15 @@ async function initializeHeroCounters() {
     try {
         // Fetch all required data
         const [agentsData, mapsData, tanksData] = await Promise.all([
-            fetch('https://cdn1.heatlabs.net/agents.json').then(res => res.json()),
-            fetch('https://cdn1.heatlabs.net/maps.json').then(res => res.json()),
-            fetch('https://cdn1.heatlabs.net/tanks.json').then(res => res.json())
+            fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/agents.json').then(res => res.json()),
+            fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/maps.json').then(res => res.json()),
+            fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/tanks.json').then(res => res.json())
         ]);
 
-        // Count all items
-        const agentsCount = agentsData.agents.length;
-        const mapsCount = mapsData.maps.length;
-        const tanksCount = tanksData.length;
+        // Filter and count only displayed items
+        const agentsCount = agentsData.agents.filter(agent => agent.state === "displayed").length;
+        const mapsCount = mapsData.maps.filter(map => map.state === "displayed").length;
+        const tanksCount = tanksData.filter(tank => tank.state === "displayed").length;
 
         // Speed factor: higher = faster, lower = slower
         const speedFactor = 2;

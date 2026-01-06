@@ -69,13 +69,13 @@ class GameDataPage {
             this.showLoading();
 
             // Load achievements
-            const achievementsResponse = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Database/refs/heads/main/game-data/steam_achievements.json');
+            const achievementsResponse = await fetch('https://cdn2.heatlabs.net/game-data/steam_achievements.json');
             const achievementsData = await achievementsResponse.json();
             this.achievements = achievementsData.achievements;
             this.filteredAchievements = [...this.achievements];
 
             // Load statistics
-            const statisticsResponse = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Database/refs/heads/main/game-data/steam_statistics.json');
+            const statisticsResponse = await fetch('https://cdn2.heatlabs.net/game-data/steam_statistics.json');
             const statisticsData = await statisticsResponse.json();
             this.statistics = statisticsData.metrics;
             this.filteredStatistics = [...this.statistics];

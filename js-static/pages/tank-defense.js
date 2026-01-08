@@ -684,53 +684,11 @@ class TankGame {
             });
         }
 
-        // Debug toggle (DEBUG)
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'd') {
-                e.preventDefault();
-                this.settings.debugMode = !this.settings.debugMode;
-                this.showMessage(`Debug mode: ${this.settings.debugMode ? 'ON' : 'OFF'}`);
-            }
-        });
-
-        // Regenerate rocks on R key (DEBUG)
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'r' && e.ctrlKey) {
-                e.preventDefault();
-                this.generateRocks();
-                this.showMessage('Regenerated rocks');
-            }
-        });
-
-        // Regenerate health packs on H key (DEBUG)
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'h' && e.ctrlKey) {
-                e.preventDefault();
-                this.generateHealthPacks();
-                this.showMessage('Regenerated health packs');
-            }
-        });
-
         // Pause with ESC key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.gameRunning && !this.gameOver) {
                 e.preventDefault();
                 this.togglePause();
-            }
-        });
-
-        // Rapid Fire toggle (DEBUG CHEAT)
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'v') {
-                e.preventDefault();
-                this.settings.rapidFire = !this.settings.rapidFire;
-                this.showMessage(`Rapid Fire: ${this.settings.rapidFire ? 'Enabled' : 'Disabled'}`);
-                if (this.settings.rapidFire === true) {
-                    this.playerTank.shootCooldown = 0;
-                }
-                if (this.settings.rapidFire === false) {
-                    this.playerTank.shootCooldown = 500;
-                }
             }
         });
 

@@ -126,7 +126,9 @@ async function fetchViewCount() {
         // Get the tracking pixel URL from the meta tag
         const trackingPixel = document.querySelector('.heatlabs-tracking-pixel');
         if (!trackingPixel || !trackingPixel.src) {
-            return { totalViews: 0 };
+            return {
+                totalViews: 0
+            };
         }
 
         // Convert tracking URL to stats API URL
@@ -139,7 +141,9 @@ async function fetchViewCount() {
         return await response.json();
     } catch (error) {
         console.error('Error loading view count:', error);
-        return { totalViews: 0 }; // Return 0 if there's an error
+        return {
+            totalViews: 0
+        }; // Return 0 if there's an error
     }
 }
 

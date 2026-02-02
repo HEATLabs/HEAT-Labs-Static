@@ -1049,6 +1049,7 @@ p {
 		grid-template-columns: 1fr;
 	}
 }
+
 /* Video Cards */
 .video-card {
 	background-color: var(--card-bg);

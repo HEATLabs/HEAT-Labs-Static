@@ -1,5 +1,22 @@
 // Tournament Bracket Page
 document.addEventListener('DOMContentLoaded', function() {
+    // Check maintenance status first
+    fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/maintenance.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch maintenance data');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.maintenance) {
+                window.location.href = 'https://heatlabs.net/maintenance';
+            }
+        })
+        .catch(error => {
+            console.error('Error checking maintenance status:', error);
+        });
+
     // Check for URL parameters first
     checkUrlParameters();
 
@@ -22,17 +39,31 @@ document.addEventListener('DOMContentLoaded', function() {
 let availableTournaments = [];
 let currentBracketData = null;
 let selectedItem = null;
+let currentParticipants = [];
 
 // Pan and zoom variables
 let currentZoom = 1;
+let targetZoom = 1;
 let currentX = 0;
+let targetX = 0;
 let currentY = 0;
+let targetY = 0;
 let isDragging = false;
+let isAnimating = false;
 let startX, startY;
 let dragWrapper = null;
 let bracketsViewer = null;
 let panIndicator = null;
 let isBracketLoaded = false;
+let animationFrame = null;
+let lastMouseX = 0;
+let lastMouseY = 0;
+
+// Smooth zoom settings
+const ZOOM_SMOOTHING = 0.15;
+const ZOOM_MIN = 0.3;
+const ZOOM_MAX = 3;
+const ZOOM_STEP = 0.1;
 
 // Function to check URL parameters
 function checkUrlParameters() {
@@ -113,7 +144,7 @@ async function loadTournamentFromParameter() {
 async function fetchTournamentsList() {
     try {
         // Uncomment the line below for production
-        const response = await fetch('https://cdn1.heatlabs.net/tournaments.json');
+        const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/tournaments-dev.json');
         // Uncomment the line below for development
         // const response = await fetch('../HEAT-Labs-Configs/tournaments-dev-local.json');
         if (!response.ok) {
@@ -294,40 +325,6 @@ function closeDropdown() {
     }
 }
 
-// Function to handle tournament selection (backward compatibility)
-async function handleTournamentSelection(event) {
-    const selectedValue = event.target.value;
-
-    if (!selectedValue) {
-        // Clear the bracket view
-        clearBracketView();
-        return;
-    }
-
-    // Parse the selected value to get tournament index and bracket type
-    const [tournamentIndex, bracketType] = selectedValue.split('-');
-
-    // Get the selected option element to access data attributes
-    const selectedOption = event.target.options[event.target.selectedIndex];
-    const bracketUrl = selectedOption.dataset.url;
-
-    if (!bracketUrl) {
-        showError('No bracket URL available for this selection.');
-        return;
-    }
-
-    // Show loading state
-    showLoading('Loading tournament bracket...');
-
-    try {
-        await fetchBracketData(bracketUrl);
-        // Loading state will be cleared by fetchBracketData when successful
-    } catch (error) {
-        console.error('Error loading bracket:', error);
-        showError('Failed to load bracket data. Please try again.');
-    }
-}
-
 // Function to fetch bracket data
 async function fetchBracketData(bracketUrl) {
     if (!bracketUrl) {
@@ -341,6 +338,11 @@ async function fetchBracketData(bracketUrl) {
 
     const tournamentData = await response.json();
     currentBracketData = tournamentData;
+
+    // Store participants with their images
+    if (tournamentData.participants) {
+        currentParticipants = tournamentData.participants;
+    }
 
     // Initialize bracket viewer with tournament data
     if (window.bracketsViewer && tournamentData) {
@@ -417,7 +419,7 @@ function initializeTournamentBracket() {
     if (zoomInBtn) {
         zoomInBtn.addEventListener('click', () => {
             if (isBracketLoaded) {
-                zoom(0.1);
+                smoothZoom(ZOOM_STEP);
             }
         });
     }
@@ -425,7 +427,7 @@ function initializeTournamentBracket() {
     if (zoomOutBtn) {
         zoomOutBtn.addEventListener('click', () => {
             if (isBracketLoaded) {
-                zoom(-0.1);
+                smoothZoom(-ZOOM_STEP);
             }
         });
     }
@@ -433,7 +435,7 @@ function initializeTournamentBracket() {
     if (resetZoomBtn) {
         resetZoomBtn.addEventListener('click', () => {
             if (isBracketLoaded) {
-                resetZoom();
+                smoothResetZoom();
             }
         });
     }
@@ -445,6 +447,9 @@ function initializeTournamentBracket() {
 
     // Initially disable bracket interactions
     isBracketLoaded = false;
+
+    // Start animation loop
+    startAnimationLoop();
 }
 
 // Initialize drag to pan functionality
@@ -455,91 +460,93 @@ function initDragPan(element, container) {
     updateTransform(element);
 
     // Mouse down handler
-    element.addEventListener('mousedown', (e) => {
+    container.addEventListener('mousedown', (e) => {
         // Only enable dragging if bracket is loaded
         if (!isBracketLoaded) return;
         if (e.button !== 0) return; // Left click only
 
+        e.preventDefault();
+
         isDragging = true;
-        startX = e.clientX - currentX;
-        startY = e.clientY - currentY;
+        startX = e.clientX - targetX;
+        startY = e.clientY - targetY;
 
         element.style.cursor = 'grabbing';
         element.classList.add('dragging');
 
-        // Show pan indicator
-        if (panIndicator) {
-            panIndicator.classList.add('visible');
-            setTimeout(() => {
-                panIndicator.classList.remove('visible');
-            }, 2000);
-        }
-
-        e.preventDefault();
+        document.body.classList.add('dragging-active');
     });
 
     // Mouse move handler
     document.addEventListener('mousemove', (e) => {
         if (!isDragging || !isBracketLoaded) return;
 
-        currentX = e.clientX - startX;
-        currentY = e.clientY - startY;
+        e.preventDefault();
+
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+
+        targetX = e.clientX - startX;
+        targetY = e.clientY - startY;
 
         // Add boundaries to prevent dragging too far
         const bounds = getDragBounds(element);
-        currentX = Math.min(Math.max(currentX, bounds.minX), bounds.maxX);
-        currentY = Math.min(Math.max(currentY, bounds.minY), bounds.maxY);
-
-        updateTransform(element);
+        targetX = Math.min(Math.max(targetX, bounds.minX), bounds.maxX);
+        targetY = Math.min(Math.max(targetY, bounds.minY), bounds.maxY);
     });
 
     // Mouse up handler
     document.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
-            element.style.cursor = isBracketLoaded ? 'grab' : 'default';
-            element.classList.remove('dragging');
+            if (bracketsViewer) {
+                bracketsViewer.style.cursor = isBracketLoaded ? 'grab' : 'default';
+                bracketsViewer.classList.remove('dragging');
+            }
+            // Remove dragging class from body
+            document.body.classList.remove('dragging-active');
         }
     });
 
     // Mouse leave handler
-    element.addEventListener('mouseleave', () => {
+    window.addEventListener('blur', () => {
         if (isDragging) {
             isDragging = false;
-            element.style.cursor = isBracketLoaded ? 'grab' : 'default';
-            element.classList.remove('dragging');
+            if (bracketsViewer) {
+                bracketsViewer.style.cursor = isBracketLoaded ? 'grab' : 'default';
+                bracketsViewer.classList.remove('dragging');
+            }
+            document.body.classList.remove('dragging-active');
         }
     });
 
-    // Wheel zoom handler
-    element.addEventListener('wheel', (e) => {
+    // Wheel zoom handler with smooth animation
+    container.addEventListener('wheel', (e) => {
         // Only enable zoom if bracket is loaded
         if (!isBracketLoaded) return;
 
         e.preventDefault();
 
-        // Get mouse position relative to element
+        // Store mouse position for zoom towards point
         const rect = element.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        lastMouseX = e.clientX - rect.left;
+        lastMouseY = e.clientY - rect.top;
 
         // Calculate zoom delta
-        const delta = e.deltaY > 0 ? -0.1 : 0.1;
-        const newZoom = Math.min(Math.max(currentZoom + delta, 0.3), 3);
+        const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        const newZoom = Math.min(Math.max(targetZoom + delta, ZOOM_MIN), ZOOM_MAX);
 
-        if (newZoom !== currentZoom) {
-            // Adjust position to zoom towards mouse
-            const scale = newZoom / currentZoom;
-            currentX = mouseX - (mouseX - currentX) * scale;
-            currentY = mouseY - (mouseY - currentY) * scale;
-            currentZoom = newZoom;
+        if (newZoom !== targetZoom) {
+            // Calculate zoom towards mouse position
+            const scale = newZoom / targetZoom;
 
-            // Add boundaries
-            const bounds = getDragBounds(element);
-            currentX = Math.min(Math.max(currentX, bounds.minX), bounds.maxX);
-            currentY = Math.min(Math.max(currentY, bounds.minY), bounds.maxY);
+            // Adjust target position to zoom towards mouse
+            targetX = lastMouseX - (lastMouseX - targetX) * scale;
+            targetY = lastMouseY - (lastMouseY - targetY) * scale;
+            targetZoom = newZoom;
 
-            updateTransform(element);
+            // Apply boundaries
+            applyBoundaries(element);
         }
     }, {
         passive: false
@@ -549,22 +556,36 @@ function initDragPan(element, container) {
     element.style.cursor = 'default';
 }
 
+// Apply boundaries to target position
+function applyBoundaries(element) {
+    const bounds = getDragBounds(element);
+    targetX = Math.min(Math.max(targetX, bounds.minX), bounds.maxX);
+    targetY = Math.min(Math.max(targetY, bounds.minY), bounds.maxY);
+}
+
 // Calculate drag boundaries
 function getDragBounds(element) {
     const rect = element.getBoundingClientRect();
     const parentRect = element.parentElement.getBoundingClientRect();
 
     // Calculate bounds based on zoom level
-    const contentWidth = element.scrollWidth * currentZoom;
-    const contentHeight = element.scrollHeight * currentZoom;
+    const contentWidth = element.scrollWidth * targetZoom;
+    const contentHeight = element.scrollHeight * targetZoom;
     const viewportWidth = parentRect.width;
     const viewportHeight = parentRect.height;
 
+    // Calculate the maximum allowed drag distances
+    const maxLeft = 1000;
+    const maxRight = viewportWidth - contentWidth;
+
+    const maxTop = 1000;
+    const maxBottom = viewportHeight - contentHeight;
+
     return {
-        minX: Math.min(0, viewportWidth - contentWidth),
-        maxX: Math.max(0, viewportWidth - contentWidth),
-        minY: Math.min(0, viewportHeight - contentHeight),
-        maxY: Math.max(0, viewportHeight - contentHeight)
+        minX: Math.min(maxRight, maxLeft),
+        maxX: Math.max(maxRight, maxLeft),
+        minY: Math.min(maxBottom, maxTop),
+        maxY: Math.max(maxBottom, maxTop)
     };
 }
 
@@ -573,43 +594,84 @@ function updateTransform(element) {
     element.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom})`;
 }
 
-// Zoom function
-function zoom(delta) {
-    const newZoom = Math.min(Math.max(currentZoom + delta, 0.3), 3);
+// Smooth zoom function
+function smoothZoom(delta) {
+    const newZoom = Math.min(Math.max(targetZoom + delta, ZOOM_MIN), ZOOM_MAX);
 
-    if (newZoom !== currentZoom) {
+    if (newZoom !== targetZoom) {
         // Zoom towards center of viewport
         const element = bracketsViewer;
         const rect = element.getBoundingClientRect();
         const viewportWidth = element.parentElement.clientWidth;
         const viewportHeight = element.parentElement.clientHeight;
 
-        const centerX = viewportWidth / 2 - rect.left;
-        const centerY = viewportHeight / 2 - rect.top;
+        const centerX = viewportWidth / 2;
+        const centerY = viewportHeight / 2;
 
-        const scale = newZoom / currentZoom;
-        currentX = centerX - (centerX - currentX) * scale;
-        currentY = centerY - (centerY - currentY) * scale;
-        currentZoom = newZoom;
+        const scale = newZoom / targetZoom;
 
-        // Add boundaries
-        const bounds = getDragBounds(element);
-        currentX = Math.min(Math.max(currentX, bounds.minX), bounds.maxX);
-        currentY = Math.min(Math.max(currentY, bounds.minY), bounds.maxY);
+        // Adjust target position to zoom towards center
+        targetX = centerX - (centerX - targetX) * scale;
+        targetY = centerY - (centerY - targetY) * scale;
+        targetZoom = newZoom;
 
-        updateTransform(element);
+        // Apply boundaries
+        applyBoundaries(element);
     }
+}
+
+// Smooth reset zoom function
+function smoothResetZoom() {
+    targetZoom = 1;
+    targetX = 0;
+    targetY = 0;
 }
 
 // Reset zoom function
 function resetZoom() {
     currentZoom = 1;
+    targetZoom = 1;
     currentX = 0;
+    targetX = 0;
     currentY = 0;
+    targetY = 0;
 
     if (bracketsViewer) {
         updateTransform(bracketsViewer);
     }
+}
+
+// Start animation loop for smooth transitions
+function startAnimationLoop() {
+    function animate() {
+        let needsUpdate = false;
+
+        // Smooth zoom animation
+        if (Math.abs(currentZoom - targetZoom) > 0.001) {
+            currentZoom += (targetZoom - currentZoom) * ZOOM_SMOOTHING;
+            needsUpdate = true;
+        } else {
+            currentZoom = targetZoom;
+        }
+
+        // Smooth pan animation
+        if (Math.abs(currentX - targetX) > 0.1 || Math.abs(currentY - targetY) > 0.1) {
+            currentX += (targetX - currentX) * ZOOM_SMOOTHING;
+            currentY += (targetY - currentY) * ZOOM_SMOOTHING;
+            needsUpdate = true;
+        } else {
+            currentX = targetX;
+            currentY = targetY;
+        }
+
+        if (needsUpdate && bracketsViewer) {
+            updateTransform(bracketsViewer);
+        }
+
+        animationFrame = requestAnimationFrame(animate);
+    }
+
+    animationFrame = requestAnimationFrame(animate);
 }
 
 // Toggle theme
@@ -631,6 +693,13 @@ function toggleTheme() {
     }
 }
 
+// Function to get participant image
+function getParticipantImage(participantId, participants) {
+    if (!participantId || !participants) return null;
+    const participant = participants.find(p => p.id === participantId);
+    return participant ? participant.image || 'https://cdn13.heatlabs.net/tournament-team-logos/no-logo.webp' : null;
+}
+
 // Function to show match details in a beautiful popup
 function showMatchDetails(match, participants) {
     // Remove any existing match details popup
@@ -639,10 +708,13 @@ function showMatchDetails(match, participants) {
         existingPopup.remove();
     }
 
-    // Get participant names
-    const getParticipantName = (id) => {
+    // Get participant names and images
+    const getParticipantInfo = (id) => {
         const participant = participants.find(p => p.id === id);
-        return participant ? participant.name : 'TBD';
+        return {
+            name: participant ? participant.name : 'TBD',
+            image: participant ? (participant.image || 'https://cdn13.heatlabs.net/tournament-team-logos/no-logo.webp') : null
+        };
     };
 
     // Format result text
@@ -655,6 +727,10 @@ function showMatchDetails(match, participants) {
     const matchDescription = match.description && match.description !== 'DESCRIPTION PLACEHOLDER' ?
         match.description :
         'No additional match details available.';
+
+    // Get participant info for both teams
+    const team1Info = getParticipantInfo(match.opponent1?.id);
+    const team2Info = getParticipantInfo(match.opponent2?.id);
 
     // Create popup element
     const popup = document.createElement('div');
@@ -673,7 +749,8 @@ function showMatchDetails(match, participants) {
             <div class="match-teams">
                 <div class="match-team ${winner1 ? 'winner' : ''} ${match.opponent1?.result === 'loss' ? 'loser' : ''}">
                     <div class="team-info">
-                        <span class="team-name">${getParticipantName(match.opponent1?.id)}</span>
+                        ${team1Info.image ? `<img src="${team1Info.image}" alt="${team1Info.name}" class="team-logo">` : ''}
+                        <span class="team-name">${team1Info.name}</span>
                     </div>
                     <div class="team-score-container">
                         <span class="team-score">${match.opponent1?.score || 0}</span>
@@ -683,7 +760,8 @@ function showMatchDetails(match, participants) {
                 <div class="match-vs">VS</div>
                 <div class="match-team ${winner2 ? 'winner' : ''} ${match.opponent2?.result === 'loss' ? 'loser' : ''}">
                     <div class="team-info">
-                        <span class="team-name">${getParticipantName(match.opponent2?.id)}</span>
+                        ${team2Info.image ? `<img src="${team2Info.image}" alt="${team2Info.name}" class="team-logo">` : ''}
+                        <span class="team-name">${team2Info.name}</span>
                     </div>
                     <div class="team-score-container">
                         <span class="team-score">${match.opponent2?.score || 0}</span>
@@ -742,6 +820,36 @@ function getMatchStatus(status) {
         6: 'Disqualified'
     };
     return statusMap[status] || 'Unknown';
+}
+
+// Custom renderer for participants with images
+function enhanceBracketWithImages() {
+    // Find all participant containers
+    const participantContainers = document.querySelectorAll('.brackets-viewer .participant');
+
+    participantContainers.forEach(container => {
+        // Get participant ID from data attribute
+        const participantId = container.getAttribute('data-participant-id');
+        if (!participantId) return;
+
+        // Find participant in our stored data
+        const participant = currentParticipants.find(p => p.id.toString() === participantId);
+        if (!participant) return;
+
+        // Find the name container
+        const nameContainer = container.querySelector('.name');
+        if (!nameContainer) return;
+
+        // Check if image already exists to avoid duplicates
+        if (!nameContainer.querySelector('img')) {
+            // Create and insert image element at the beginning
+            const img = document.createElement('img');
+            img.src = participant.image || 'https://cdn13.heatlabs.net/tournament-team-logos/no-logo.webp';
+            img.alt = participant.name;
+            img.className = 'participant-logo';
+            nameContainer.insertBefore(img, nameContainer.firstChild);
+        }
+    });
 }
 
 async function initializeBracketsViewer(tournamentData) {
@@ -842,6 +950,9 @@ async function initializeBracketsViewer(tournamentData) {
 
         // Render the brackets
         await window.bracketsViewer.render(data, config);
+
+        // Add images to participants
+        enhanceBracketWithImages();
 
         // Ensure bracket connections aligned
         setTimeout(fixBracketConnections, 100);

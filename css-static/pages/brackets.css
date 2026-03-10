@@ -82,8 +82,8 @@ body {
 	right: -5000px;
 	bottom: -5000px;
 	background-image:
-		linear-gradient(to right, var(--grid-color, rgba(255, 255, 255, 0.03)) 1px, transparent 1px),
-		linear-gradient(to bottom, var(--grid-color, rgba(255, 255, 255, 0.03)) 1px, transparent 1px);
+			linear-gradient(to right, var(--grid-color, rgba(255, 255, 255, 0.03)) 1px, transparent 1px),
+			linear-gradient(to bottom, var(--grid-color, rgba(255, 255, 255, 0.03)) 1px, transparent 1px);
 	background-size: 50px 50px;
 	background-position: 0 0;
 	z-index: -1;
@@ -317,6 +317,17 @@ body {
 	visibility: hidden !important;
 	border: none !important;
 	background: none !important;
+}
+
+/* Custom bracket lines */
+.bracket-connectors {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vmax;
+	height: 100vmax;
+	pointer-events: none;
+	z-index: 100;
 }
 
 /* Loading and error states */

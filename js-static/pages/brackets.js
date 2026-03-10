@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize tournament bracket controls
     initializeTournamentBracket();
 
+
     // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
         const dropdown = document.querySelector('.custom-dropdown');
@@ -58,6 +59,8 @@ let isBracketLoaded = false;
 let animationFrame = null;
 let lastMouseX = 0;
 let lastMouseY = 0;
+
+let connectorData = [];
 
 // Smooth zoom settings
 const ZOOM_SMOOTHING = 0.15;
@@ -166,6 +169,7 @@ async function fetchTournamentsList() {
         // After dropdown is populated, try to load tournament from URL parameter
         setTimeout(() => {
             loadTournamentFromParameter();
+
         }, 100); // Small delay to ensure dropdown is rendered
 
     } catch (error) {
@@ -342,6 +346,13 @@ async function fetchBracketData(bracketUrl) {
     // Store participants with their images
     if (tournamentData.participants) {
         currentParticipants = tournamentData.participants;
+    }
+
+    // Store connector data
+    if (tournamentData.connectors) {
+        connectorData = tournamentData.connectors;
+    } else {
+        connectorData = [];
     }
 
     // Initialize bracket viewer with tournament data
@@ -955,7 +966,12 @@ async function initializeBracketsViewer(tournamentData) {
         enhanceBracketWithImages();
 
         // Ensure bracket connections aligned
-        setTimeout(fixBracketConnections, 100);
+        requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setTimeout(fixBracketConnections, 100);
+                })
+            }
+        )
     } catch (error) {
         console.error('Error rendering bracket:', error);
         showError('Error rendering tournament bracket. Please try again later.');
@@ -965,29 +981,47 @@ async function initializeBracketsViewer(tournamentData) {
 
 // Fix bracket connection lines
 function fixBracketConnections() {
-    const brackets = document.querySelectorAll('.brackets-viewer .bracket');
+    // Remove old connectors
+    document.querySelectorAll('.bracket-connectors').forEach(el => el.remove());
 
-    brackets.forEach(bracket => {
-        const rounds = bracket.querySelectorAll('.round');
+    let drawCount = 0;
+    const container = document.getElementById('brackets-viewer');
+    if (!container) return;
 
-        rounds.forEach((round, roundIndex) => {
-            if (roundIndex === rounds.length - 1) return; // Skip last round
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "bracket-connectors");
+    container.appendChild(svg);
 
-            const matches = round.querySelectorAll('.match');
-            const nextRound = rounds[roundIndex + 1];
-            const nextMatches = nextRound.querySelectorAll('.match');
+    const containerRect = container.getBoundingClientRect();
 
-            matches.forEach((match, matchIndex) => {
-                // Ensure connection classes are properly set
-                if (nextMatches[matchIndex * 2] || nextMatches[matchIndex * 2 + 1]) {
-                    match.classList.add('connect-next');
+    connectorData.forEach(connector => {
+        const sourceID = parseInt(Object.keys(connector)[0]);
+        const targetID = connector[sourceID];
 
-                    // Add straight class for finals
-                    if (rounds.length - roundIndex <= 2) {
-                        match.classList.add('straight');
-                    }
-                }
-            });
-        });
+        const sourceMatch = document.querySelector(`.brackets-viewer .match[data-match-id="${sourceID}"]`);
+        const targetMatch = document.querySelector(`.brackets-viewer .match[data-match-id="${targetID}"]`);
+
+        if (sourceMatch && targetMatch) {
+            const sourceRect = sourceMatch.getBoundingClientRect();
+            const targetRect = targetMatch.getBoundingClientRect();
+
+            const startX = sourceRect.right - containerRect.left;
+            const startY = sourceRect.top + sourceRect.height / 2 - containerRect.top;
+            const endX = targetRect.left - containerRect.left;
+            const endY = targetRect.top + targetRect.height / 2 - containerRect.top;
+
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", startX.toString());
+            line.setAttribute("y1", startY.toString());
+            line.setAttribute("x2", endX.toString());
+            line.setAttribute("y2", endY.toString());
+            line.setAttribute("stroke", "var(--match-glow)");
+            line.setAttribute("stroke-width", "2");
+
+            svg.appendChild(line);
+            drawCount++;
+        } else {
+            console.warn(`Missing match: ${sourceMatch ? targetID : sourceID}`);
+        }
     });
 }

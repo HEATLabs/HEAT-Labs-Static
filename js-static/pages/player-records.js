@@ -266,12 +266,7 @@
       recordsError.style.display = 'none';
       recordsGrid.style.display = 'none';
 
-      const response = await fetch(RECORDS_JSON_URL, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache'
-        }
-      });
+      const response = await fetch(RECORDS_JSON_URL);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

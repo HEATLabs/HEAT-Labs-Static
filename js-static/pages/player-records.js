@@ -1,7 +1,7 @@
-// JavaScript: player-records.js - Place this in your JS directory and link it
+// player-records logic
 (function() {
   // Configuration
-  const RECORDS_API_URL = 'https://cdn1.heatlabs.net/player-records.json';
+  const RECORDS_JSON_URL = 'https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/player-records.json';
   const DISCORD_INVITE_URL = 'https://discord.gg/KRYEw9aGZT';
 
   // Category mapping for display names and icons
@@ -186,7 +186,6 @@
   // Render all records
   function renderRecords() {
     if (!recordsData || recordsData.length === 0) {
-      // If no data but fetch succeeded, show all categories as empty
       renderEmptyCategories();
       return;
     }
@@ -197,7 +196,6 @@
     for (const category of ALL_CATEGORIES) {
       const categoryRecords = groupedRecords[category];
       if (categoryRecords && categoryRecords.length > 0) {
-        // Show only the top record (highest number)
         const topRecord = categoryRecords[0];
         allCardsHtml += createRecordCard(category, topRecord);
       } else {
@@ -237,7 +235,6 @@
     const agent = btn.getAttribute('data-agent');
 
     if (!proofUrl) {
-      // Fallback: show a message that no proof is available
       alert('No proof image available for this record.');
       return;
     }
@@ -255,7 +252,6 @@
 
   function closeModal() {
     modalOverlay.classList.remove('active');
-    // Clear image src to stop loading when closed
     setTimeout(() => {
       if (!modalOverlay.classList.contains('active')) {
         proofImage.src = '';
@@ -270,7 +266,7 @@
       recordsError.style.display = 'none';
       recordsGrid.style.display = 'none';
 
-      const response = await fetch(RECORDS_API_URL, {
+      const response = await fetch(RECORDS_JSON_URL, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache'
@@ -295,7 +291,7 @@
       renderRecords();
 
     } catch (error) {
-      console.error('Error fetching player records:', error);
+      console.error('Error loading player records:', error);
       recordsLoading.style.display = 'none';
       recordsError.style.display = 'block';
       recordsGrid.style.display = 'none';
@@ -314,7 +310,6 @@
         }
       });
     }
-    // Close on Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
         closeModal();

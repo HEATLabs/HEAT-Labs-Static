@@ -232,6 +232,47 @@ function parseModDetails(mdContent) {
         details.description = descriptionMatch[1].trim();
     }
 
+    // Extract installation steps - improved to handle multi-line descriptions with >
+    details.installationSteps = [];
+    const installationMatch = mdContent.match(/installation:[\s\S]*?steps:([\s\S]*?)(?=\n\w+:|$)/i);
+    if (installationMatch && installationMatch[1]) {
+        const stepsSection = installationMatch[1];
+
+        // Split by step markers
+        const stepRegex = /-\s*name:\s*Step\s*#(\d+)\s*description:\s*(.+?)(?=\n\s*-|\n\s*\w+:|$)/gi;
+        let stepMatch;
+
+        while ((stepMatch = stepRegex.exec(stepsSection)) !== null) {
+            const stepNumber = stepMatch[1];
+            let description = stepMatch[2].trim();
+
+            // If description starts with '>', it's a multi-line description
+            if (description.startsWith('>')) {
+                // Remove the '>' and trim
+                description = description.substring(1).trim();
+
+                // Look for additional lines that continue the description
+                // These are lines that start with spaces or are empty (continuation lines)
+                const remainingText = stepsSection.substring(stepMatch.index + stepMatch[0].length);
+                const continuationLines = remainingText.match(/^\s*>\s*(.+)$/gm);
+
+                if (continuationLines) {
+                    // Add the continuation lines to the description
+                    const continuationText = continuationLines.map(line =>
+                        line.replace(/^\s*>\s*/, '').trim()
+                    ).join(' ');
+
+                    description = description + ' ' + continuationText;
+                }
+            }
+
+            details.installationSteps.push({
+                name: `Step #${stepNumber}`,
+                description: description
+            });
+        }
+    }
+
     return details;
 }
 
@@ -348,6 +389,55 @@ function updateModPageElements(mod, modVersion, modDetails) {
             }
         }
     });
+
+    // Update installation steps (FAQ section)
+    const faqContainer = document.querySelector('.faq-container');
+    if (faqContainer && modDetails && modDetails.installationSteps && modDetails.installationSteps.length > 0) {
+        // Clear existing FAQ items
+        faqContainer.innerHTML = '';
+
+        // Create new FAQ items from installation steps
+        modDetails.installationSteps.forEach((step, index) => {
+            const faqItem = document.createElement('div');
+            faqItem.className = `faq-item ${index === 0 ? 'active' : ''}`;
+
+            const faqQuestion = document.createElement('div');
+            faqQuestion.className = 'faq-question';
+            faqQuestion.innerHTML = `
+                <h4>${step.name}</h4>
+                <i class="fas fa-chevron-down"></i>
+            `;
+
+            const faqAnswer = document.createElement('div');
+            faqAnswer.className = `faq-answer ${index === 0 ? 'active' : ''}`;
+            faqAnswer.innerHTML = `<p>${step.description}</p>`;
+
+            faqItem.appendChild(faqQuestion);
+            faqItem.appendChild(faqAnswer);
+            faqContainer.appendChild(faqItem);
+        });
+
+        // Re-attach click event listeners to FAQ items
+        const newFaqItems = faqContainer.querySelectorAll('.faq-item');
+        newFaqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                // Close all other FAQ items
+                newFaqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                        const answer = otherItem.querySelector('.faq-answer');
+                        if (answer) answer.classList.remove('active');
+                    }
+                });
+
+                // Toggle current item
+                item.classList.toggle('active');
+                const answer = item.querySelector('.faq-answer');
+                if (answer) answer.classList.toggle('active');
+            });
+        });
+    }
 
     // Update "Related Mods" sidebar
     updateRelatedMods(mod);

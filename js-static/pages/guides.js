@@ -7,7 +7,7 @@ let guidesPerPage = 12;
 // Function to fetch guides data from JSON
 async function fetchGuidesData() {
     try {
-        const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/guides.json');
+        const response = await fetch('https://cdn1.heatlabs.net/guides.json');
         if (!response.ok) {
             throw new Error('Failed to load guides data');
         }

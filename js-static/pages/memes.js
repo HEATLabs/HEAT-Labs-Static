@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
 
         try {
-            const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/memes.json');
+            const response = await fetch('https://cdn1.heatlabs.net/memes.json');
 
             if (!response.ok) {
                 throw new Error('Failed to load memes data');

@@ -7,7 +7,7 @@ let allPosts = [];
 // Function to fetch blog data from JSON
 async function fetchBlogData() {
     try {
-        const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/blog.json');
+        const response = await fetch('https://cdn1.heatlabs.net/blog.json');
         if (!response.ok) {
             throw new Error('Failed to load blog data');
         }

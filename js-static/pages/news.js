@@ -7,7 +7,7 @@ let postsPerPage = 12;
 // Function to fetch news data from JSON
 async function fetchNewsData() {
     try {
-        const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/news.json');
+        const response = await fetch('https://cdn1.heatlabs.net/news.json');
         if (!response.ok) {
             throw new Error('Failed to load news data');
         }

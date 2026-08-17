@@ -594,7 +594,7 @@ class PlayerRecords {
             this.elements.loadingProgressBar.style.width = '0%';
 
             // Load the records data
-            const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/player-records.json');
+            const response = await fetch('https://cdn1.heatlabs.net/player-records.json');
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             this.records = data.records || {};

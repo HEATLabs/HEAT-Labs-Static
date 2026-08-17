@@ -124,7 +124,7 @@ async function fetchGitHubVersion(githubUrl) {
 // Function to fetch mod data based on ID or slug
 async function fetchModData(modId, modSlug) {
     try {
-        const modsResponse = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/mods.json');
+        const modsResponse = await fetch('https://cdn1.heatlabs.net/mods.json');
         const modsData = await modsResponse.json();
         let mod = null;
         if (modId) {
@@ -840,7 +840,7 @@ function generateGridLayout(videos) {
 // Function to fetch and display related mods
 async function updateRelatedMods(currentMod) {
     try {
-        const modsResponse = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/mods.json');
+        const modsResponse = await fetch('https://cdn1.heatlabs.net/mods.json');
         const modsData = await modsResponse.json();
         const relatedMods = modsData.filter(m =>
             m.id !== currentMod.id &&

@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     // API endpoints
     const STATS_API_URL = 'https://views.heatlabs.net/api/stats';
-    const PIXEL_MAPPING_URL = 'https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/tracking-pixel.json';
-    const GSC_INDEX_URL = 'https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/gsc-index.json';
-    const PAGE_DATA_URL = 'https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/page-data.json';
+    const PIXEL_MAPPING_URL = 'https://cdn1.heatlabs.net/tracking-pixel.json';
+    const GSC_INDEX_URL = 'https://cdn1.heatlabs.net/gsc-index.json';
+    const PAGE_DATA_URL = 'https://cdn1.heatlabs.net/page-data.json';
 
     // DOM elements
     const totalViewsEl = document.getElementById('totalViews');

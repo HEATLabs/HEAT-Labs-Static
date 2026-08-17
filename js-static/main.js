@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeInteractiveElements();
 
         // Fetch website version data from GitHub
-        fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/changelog.json')
+        fetch('https://cdn1.heatlabs.net/changelog.json')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch changelog data');
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Fetch game version data
-                fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/game_builds.json')
+                fetch('https://cdn1.heatlabs.net/game_builds.json')
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Failed to fetch game data');

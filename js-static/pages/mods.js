@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch mod data from JSON file
     async function fetchModData() {
         try {
-            const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/mods.json');
+            const response = await fetch('https://cdn1.heatlabs.net/mods.json');
             if (!response.ok) {
                 throw new Error('Failed to load mod data');
             }

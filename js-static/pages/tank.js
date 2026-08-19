@@ -125,7 +125,7 @@ function displayViewCounter(views) {
 // Fetch and display related guides for tanks
 async function fetchAndDisplayRelatedGuides(tankSlug) {
     try {
-        const response = await fetch('cdn1.heatlabs.net/guides.json');
+        const response = await fetch('https://cdn1.heatlabs.net/guides.json');
         if (!response.ok) {
             throw new Error('Failed to load guides data');
         }

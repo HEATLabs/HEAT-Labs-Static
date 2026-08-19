@@ -954,10 +954,6 @@ p {
 	transition: transform 0.2s ease;
 }
 
-.related-guide:hover {
-	transform: translateX(5px);
-}
-
 .related-guide:last-child {
 	margin-bottom: 0;
 	padding-bottom: 0;

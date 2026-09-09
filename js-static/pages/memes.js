@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
 
         try {
-            const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/memes.json');
+            const response = await fetch('https://cdn1.heatlabs.net/memes.json');
 
             if (!response.ok) {
                 throw new Error('Failed to load memes data');
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.display = 'none';
             const fallbackImg = document.createElement('img');
             fallbackImg.className = 'meme-img';
-            fallbackImg.src = 'https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Images/refs/heads/main/placeholder/imagefailedtoload.webp';
+            fallbackImg.src = 'https://cdn5.heatlabs.net/placeholder/imagefailedtoload.webp';
             fallbackImg.alt = meme.name;
             fallbackImg.loading = 'lazy';
             fallbackImg.decoding = 'async';
@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
         img.dataset.src = meme.path;
 
         img.onerror = function() {
-            this.src = 'https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Images/refs/heads/main/placeholder/imagefailedtoload.webp';
+            this.src = 'https://cdn5.heatlabs.net/placeholder/imagefailedtoload.webp';
             this.classList.add('loaded');
         };
 

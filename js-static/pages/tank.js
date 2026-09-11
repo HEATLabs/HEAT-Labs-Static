@@ -1915,10 +1915,28 @@ function updateTankPageElements(tank) {
         }
     }
 
-    // Update tank image
+    // Update tank image with fallback chain: main -> image -> placeholder
     const tankImage = document.querySelector('.tank-image img');
     if (tankImage) {
-        tankImage.src = tank.image;
+        const placeholderImage = 'https://cdn5.heatlabs.net/placeholder/imagefailedtoload.webp';
+        const primaryImage = tank.main || tank.image || placeholderImage;
+        const fallbackImage = tank.image && tank.image !== primaryImage ? tank.image : placeholderImage;
+
+        // Store the fallback chain as data attributes so the onerror handler can use them
+        tankImage.setAttribute('data-fallback', fallbackImage);
+        tankImage.setAttribute('data-placeholder', placeholderImage);
+
+        // Remove any existing onerror handler and set a new one that follows the chain
+        tankImage.onerror = function() {
+            if (this.dataset.fallback && this.src !== this.dataset.fallback) {
+                this.src = this.dataset.fallback;
+            } else {
+                this.src = this.dataset.placeholder;
+                this.onerror = null;
+            }
+        };
+
+        tankImage.src = primaryImage;
         tankImage.alt = tank.name;
     }
 }

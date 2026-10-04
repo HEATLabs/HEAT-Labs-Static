@@ -3,7 +3,7 @@
     'use strict';
 
     // Toggle Halloween Effects
-    const COBWEBS_ENABLED = false;
+    const COBWEBS_ENABLED = true;
 
     // Configuration
     const config = {

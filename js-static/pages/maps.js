@@ -41,7 +41,7 @@ async function updateMapViewCounters() {
 // Fetch map data from JSON file
 async function fetchMapData() {
     try {
-        const response = await fetch('https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Configs/refs/heads/main/maps.json');
+        const response = await fetch('https://cdn1.heatlabs.net/maps.json');
         if (!response.ok) {
             throw new Error('Failed to load map data');
         }
@@ -114,7 +114,7 @@ function createMapCard(map) {
                 <i class="fas fa-eye"></i>
                 <span class="views-count">0</span>
             </div>
-            <img src="${map.image}" alt="${map.name} Map" class="map-img" onerror="this.src='https://raw.githubusercontent.com/HEATLabs/HEAT-Labs-Images/refs/heads/main/placeholder/imagefailedtoload.webp'">
+            <img src="${map.image}" alt="${map.name} Map" class="map-img" onerror="this.src='https://cdn5.heatlabs.net/placeholder/imagefailedtoload.webp'">
             <div class="map-tag">${map.status}</div>
         </div>
         <div class="map-info">
